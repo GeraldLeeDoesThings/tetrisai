@@ -229,8 +229,20 @@ public class Tetromino implements TetrominoStates, Tickable {
         return didFloorKick;
     }
 
-    public boolean dropOrMerge(boolean[][] validPositions) {
+    public boolean softDrop(boolean[][] validPositions) {
+        if (doesCollide(validPositions, getPositions(), 0, -1)) {
+            return true;
+        }
+        origin.y--;
         return false;
+    }
+
+    public void hardDrop(boolean[][] validPositions) {
+        int drop = 0;
+        while (!doesCollide(validPositions, getPositions(), 0, -drop - 1)) {
+            drop--;
+        }
+        origin.y += drop;
     }
 
     public void doTick() {
