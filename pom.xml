@@ -16,6 +16,16 @@
         </dependency>
         <dependency>
             <groupId>org.deeplearning4j</groupId>
+            <artifactId>deeplearning4j-nn</artifactId>
+            <version>1.0.0-beta3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.deeplearning4j</groupId>
+            <artifactId>rl4j-core</artifactId>
+            <version>1.0.0-beta3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.deeplearning4j</groupId>
             <artifactId>deeplearning4j-ui_2.10</artifactId>
             <version>1.0.0-beta3</version>
         </dependency>

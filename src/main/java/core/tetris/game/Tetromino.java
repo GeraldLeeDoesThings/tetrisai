@@ -1,10 +1,8 @@
 package core.tetris.game;
 
 import core.tetris.Tickable;
-
 import java.awt.*;
-
-// 4 + hold
+//4 + hold
 public class Tetromino implements TetrominoStates, Tickable {
 
     public enum Type {
@@ -31,7 +29,6 @@ public class Tetromino implements TetrominoStates, Tickable {
         public int getValue() {
             return VALUE;
         }
-
 
     }
 
@@ -203,17 +200,13 @@ public class Tetromino implements TetrominoStates, Tickable {
         int[][] testShifts = getTestShifts(state, direction, type.equals(Type.I));
         int[] acceptedShift = null;
         for (int[] pointShift : testShifts) {
-            for (int[] point : data) {
-                int x = point[0] + pointShift[0];
-                int y = point[1] + pointShift[1];
-                if (!((x >=0 && x < 10) && (y >= 0 && y < 23))) {
-                    if (!(canFloorKick && pointShift[1] > 0)) {
-                        if (pointShift[1] > 0) {
-                            didFloorKick = true;
-                        }
-                        didRotate = true;
-                        break;
+            int[][] shiftedPoints = shiftAllPoints(data, pointShift[0], pointShift[1]);
+            if (!doesCollide(board, shiftedPoints)) {
+                if (!(canFloorKick && pointShift[1] > 0)) {
+                    if (pointShift[1] > 0) {
+                        didFloorKick = true;
                     }
+                    didRotate = true;
                 }
             }
             if (didRotate) {
@@ -239,7 +232,7 @@ public class Tetromino implements TetrominoStates, Tickable {
 
     public void hardDrop(boolean[][] validPositions) {
         int drop = 0;
-        while (!doesCollide(validPositions, getPositions(), 0, -drop - 1)) {
+        while (!doesCollide(validPositions, getPositions(), 0, drop - 1)) {
             drop--;
         }
         origin.y += drop;

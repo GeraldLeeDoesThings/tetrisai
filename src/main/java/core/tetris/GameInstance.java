@@ -1,4 +1,7 @@
 package core.tetris;
 
-public class GameInstance {
+public abstract class GameInstance {
+
+
+
 }
