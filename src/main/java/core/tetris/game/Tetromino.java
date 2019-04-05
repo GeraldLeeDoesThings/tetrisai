@@ -42,7 +42,7 @@ public class Tetromino implements TetrominoStates, Tickable {
         origin = new Point(3, (type.equals(Type.I) ? 21 : 22));
     }
 
-    protected int[][] getPositions() {
+    public int[][] getPositions() {
         int[][] data;
         switch (type) {
             case O:
@@ -202,7 +202,7 @@ public class Tetromino implements TetrominoStates, Tickable {
         for (int[] pointShift : testShifts) {
             int[][] shiftedPoints = shiftAllPoints(data, pointShift[0], pointShift[1]);
             if (!doesCollide(board, shiftedPoints)) {
-                if (!(canFloorKick && pointShift[1] > 0)) {
+                if ((pointShift[1] <= 0) || canFloorKick) {
                     if (pointShift[1] > 0) {
                         didFloorKick = true;
                     }
@@ -236,6 +236,22 @@ public class Tetromino implements TetrominoStates, Tickable {
             drop--;
         }
         origin.y += drop;
+    }
+
+    public boolean tryLeftShift(boolean[][] board) {
+        if (!doesCollide(board, getPositions(), -1, 0)) {
+            origin.x--;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean tryRightShift(boolean[][] board) {
+        if (!doesCollide(board, getPositions(), 1, 0)) {
+            origin.x++;
+            return true;
+        }
+        return false;
     }
 
     public void doTick() {
