@@ -2,9 +2,6 @@ package core.tetris;
 
 import core.tetris.game.Tetromino;
 
-import java.awt.*;
-import java.util.LinkedList;
-
 public abstract class GameInstance {
 
     protected boolean[][] board;
@@ -56,13 +53,14 @@ public abstract class GameInstance {
         int lineCount = 0;
         for (int y = 0; y < 23; y++) {
             if (isLineAtY(y)) {
-
+                shiftDownAtY(y);
+                lineCount++;
             }
         }
         return lineCount;
     }
 
-    private boolean isLineAtY(int y) {
+    protected boolean isLineAtY(int y) {
         boolean allFull = true;
         for (int x = 0; x < 10; x++) {
             if (!board[x][y]) {
@@ -79,7 +77,14 @@ public abstract class GameInstance {
     }
 
     private void shiftDownAtY(int y) {
-
+        clearLineAtY(y);
+        for (int lineMove = y; lineMove < 22; lineMove++) {
+            for (int x = 0; x < 10; x++) {
+                board[x][y] = board[x][y + 1];
+            }
+            clearLineAtY(y + 1);
+        }
+        clearLineAtY(22);
     }
 
     public void rotateTetrominoRight() {
