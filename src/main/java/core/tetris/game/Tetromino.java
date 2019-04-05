@@ -6,7 +6,16 @@ import java.awt.*;
 public class Tetromino implements TetrominoStates, Tickable {
 
     public enum Type {
-        I, J, L, O, S, T, Z;
+        I(Color.CYAN), J(Color.BLUE), L(Color.ORANGE), O(Color.YELLOW), S(Color.GREEN), T(Color.MAGENTA), Z(Color.RED);
+
+        private final Color COLOR;
+
+        public Color getColor() {return COLOR;}
+
+        Type(Color c) {
+            this.COLOR = c;
+        }
+
     }
 
     public enum Rotate {
@@ -22,7 +31,7 @@ public class Tetromino implements TetrominoStates, Tickable {
 
         private final int VALUE;
 
-        private State(int value) {
+        State(int value) {
             VALUE = value;
         }
 

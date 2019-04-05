@@ -13,6 +13,7 @@ public class Tetris extends GameInstance {
         ticker = new Thread(() -> {
 
         });
+
     }
 
 }
