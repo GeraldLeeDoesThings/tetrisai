@@ -20,10 +20,8 @@ public class HumanKeyboardPlayer implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        System.out.println(e.getKeyCode());
         switch (e.getKeyCode()) {
             case KeyEvent.VK_SPACE:
-                System.out.println("SPACE");
                 tetris.hardDropTetromino();
                 break;
             case KeyEvent.VK_W:
@@ -35,12 +33,23 @@ public class HumanKeyboardPlayer implements KeyListener {
             case KeyEvent.VK_D:
                 tetris.moveTetrominoRight();
                 break;
+            case KeyEvent.VK_Q:
+                tetris.rotateTetrominoLeft();
+                break;
+            case KeyEvent.VK_E:
+                tetris.rotateTetrominoRight();
+                break;
+            case KeyEvent.VK_S:
+                tetris.startSoftDrop();
+                break;
         }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-
+        if (e.getKeyCode() == KeyEvent.VK_S) {
+            tetris.stopSoftDrop();
+        }
     }
 
 }

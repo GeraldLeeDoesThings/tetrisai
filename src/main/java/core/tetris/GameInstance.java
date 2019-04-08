@@ -74,7 +74,6 @@ public abstract class GameInstance implements TetrisConstants {
     }
 
     protected boolean isLineAtY(int y) {
-        boolean allFull = true;
         for (int x = 0; x < BOARD_WIDTH; x++) {
             if (!board[x][y]) {
                 return false;
@@ -83,13 +82,13 @@ public abstract class GameInstance implements TetrisConstants {
         return true;
     }
 
-    private void clearLineAtY(int y) {
+    protected void clearLineAtY(int y) {
         for (int x = 0; x < BOARD_WIDTH; x++) {
             board[x][y] = false;
         }
     }
 
-    private void shiftDownAtY(int y) {
+    protected void shiftDownAtY(int y) {
         clearLineAtY(y);
         for (int lineMove = y; lineMove < BOARD_HEIGHT + BOARD_BUFFER - 1; lineMove++) {
             for (int x = 0; x < BOARD_WIDTH; x++) {
@@ -97,7 +96,7 @@ public abstract class GameInstance implements TetrisConstants {
             }
             clearLineAtY(y + 1);
         }
-        clearLineAtY(BOARD_HEIGHT + BOARD_BUFFER);
+        clearLineAtY(BOARD_HEIGHT + BOARD_BUFFER - 1);
     }
 
     public boolean rotateTetrominoRight() {
@@ -119,6 +118,10 @@ public abstract class GameInstance implements TetrisConstants {
     private void fillPieceBag() {
         pieceBag.clear();
         pieceBag.addAll(Arrays.asList(Tetromino.Type.values()));
+    }
+
+    protected boolean canFuseOnSoftDrop() {
+        return currentPiece.wouldFuseOnSoftDrop(board);
     }
 
 }

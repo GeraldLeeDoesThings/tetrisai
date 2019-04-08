@@ -45,4 +45,12 @@ public class GridDisplay implements TetrisConstants {
         return holder;
     }
 
+    public Color[][] getDisplayColors() {
+        return displayColors;
+    }
+
+    public void setDisplayColors(Color[][] displayColors) {
+        this.displayColors = displayColors;
+    }
+
 }

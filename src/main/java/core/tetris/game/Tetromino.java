@@ -56,31 +56,36 @@ public class Tetromino implements TetrominoStates, TetrisConstants {
 
     @Contract(pure = true)
     public int[][] getPositions() {
+        return getPositions(state.VALUE);
+    }
+
+    @Contract(pure = true)
+    public int[][] getPositions(int rotationState) {
         int[][] data;
         switch (type) {
             case O:
                 data = O_STATES[0];
                 break;
             case I:
-                data = I_STATES[state.VALUE];
+                data = I_STATES[rotationState];
                 break;
             case J:
-                data = J_STATES[state.VALUE];
+                data = J_STATES[rotationState];
                 break;
             case L:
-                data = L_STATES[state.VALUE];
+                data = L_STATES[rotationState];
                 break;
             case S:
-                data = S_STATES[state.VALUE];
+                data = S_STATES[rotationState];
                 break;
             case T:
-                data = T_STATES[state.VALUE];
+                data = T_STATES[rotationState];
                 break;
             case Z:
-                data = Z_STATES[state.VALUE];
+                data = Z_STATES[rotationState];
                 break;
-                default:
-                    data = null;
+            default:
+                data = null;
         }
         return shiftAllPoints(data, origin.x, origin.y);
     }
@@ -226,7 +231,7 @@ public class Tetromino implements TetrominoStates, TetrisConstants {
     public boolean attemptRotation(@NotNull boolean[][] board, @NotNull Rotate direction, boolean canFloorKick) {
         boolean didRotate = false;
         boolean didFloorKick = false;
-        int[][] data = getPositions();
+        int[][] data = getPositions(getResultantState(state, direction).VALUE);
         int[][] testShifts = getTestShifts(state, direction, type.equals(Type.I));
         int[] acceptedShift = null;
         for (int[] pointShift : testShifts) {
@@ -261,11 +266,7 @@ public class Tetromino implements TetrominoStates, TetrisConstants {
     }
 
     public void hardDrop(@NotNull boolean[][] validPositions) {
-        int drop = 0;
-        while (!doesCollide(validPositions, getPositions(), 0, drop - 1)) {
-            drop--;
-        }
-        origin.y += drop;
+        while (!softDrop(validPositions));
     }
 
     public boolean tryLeftShift(@NotNull boolean[][] board) {
@@ -282,6 +283,10 @@ public class Tetromino implements TetrominoStates, TetrisConstants {
             return true;
         }
         return false;
+    }
+
+    public boolean wouldFuseOnSoftDrop(@NotNull boolean[][] board) {
+        return doesCollide(board, getPositions(), 0, -1);
     }
 
 }

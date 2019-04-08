@@ -13,7 +13,7 @@ public class GridFrame extends JFrame implements TetrisConstants {
         this.displayColors = displayColors;
         initColors = true;
         super.setSize(displayColors.length * (BOARD_SCALE + 2) + 2 * BOARD_BORDER, displayColors[0].length * (BOARD_SCALE + 2) + 2 + BOARD_SCALE);
-        super.setBackground(Color.BLACK);
+        //super.setBackground(Color.BLACK);
         super.setVisible(true);
     }
 
