@@ -3,6 +3,7 @@ package core.tetris.game;
 import core.tetris.GameInstance;
 import core.tetris.GridDisplay;
 
+import java.awt.event.KeyListener;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -14,149 +15,158 @@ public class Tetris extends GameInstance {
     private GridDisplay display;
     private Tetromino.Type heldPiece;
     private List<Tetromino.Type> pieceQueue;
-    private List<TetrisAction> tetrisActionQueue;
+    private SynchronizedTetrisAction nextAction;
     private AtomicBoolean isGameRunning;
-    private AtomicBoolean autoSoftDrop;
+    private AtomicLong softDropDelay;
+    private Set<ActionExecutionListener> actionExecutionListeners;
+    private Set<GravityDropListener> gravityDropListeners;
     private boolean canHold;
 
     public Tetris() {
 
         pieceQueue = Collections.synchronizedList(new LinkedList<>());
-        tetrisActionQueue = Collections.synchronizedList(new LinkedList<>());
+        nextAction = new SynchronizedTetrisAction();
         targetTime = new AtomicLong(System.currentTimeMillis() + 500L);
-        pieceQueue = null;
+        pieceQueue = new LinkedList<>();
+        actionExecutionListeners = new HashSet<>();
+        gravityDropListeners = new HashSet<>();
         canHold = true;
         heldPiece = null;
         isGameRunning = new AtomicBoolean(true);
-        autoSoftDrop = new AtomicBoolean(false);
-        display = new GridDisplay(0, 10, 0, 20);
-
+        softDropDelay = new AtomicLong(500L);
+        display = new GridDisplay();
+        currentPiece = drawFromPieceQueue();
         requestHandler = new Thread(() -> {
             while (isGameRunning.get()) {
                 if (System.currentTimeMillis() >= targetTime.get()) {
-                    targetTime.set(System.currentTimeMillis() + 500L);
+                    resetLockDelay();
                     if (super.softDropTetromino()) {
                         fuseCurrentPiece();
                         canHold = true;
                     }
                 }
-                if (!tetrisActionQueue.isEmpty()) {
-                    switch (tetrisActionQueue.get(0)) {
+                TetrisAction next = nextAction.getAction();
+                if (next != null) {
+                    switch (next) {
                         case HOLD:
                             if (canHold) {
                                 Tetromino.Type currentType = currentPiece.getType();
                                 currentPiece = (heldPiece != null) ? new Tetromino(heldPiece) : drawFromPieceQueue();
                                 heldPiece = currentType;
                                 canHold = false;
-                                targetTime.set(System.currentTimeMillis() + 500L);
+                                resetLockDelay();
                             }
                             break;
                         case HARD_DROP:
                             super.hardDropTetromino();
                             fuseCurrentPiece();
                             canHold = true;
-                            targetTime.set(System.currentTimeMillis() + 500L);
-                            break;
-                        case SOFT_DROP:
-                            if (super.softDropTetromino()) {
-                                fuseCurrentPiece();
-                                canHold = true;
-                            }
+                            resetLockDelay();
                             break;
                         case SHIFT_LEFT:
                             super.moveTetrominoLeft();
+                            resetLockDelay();
                             break;
                         case ROTATE_LEFT:
-                            if (super.rotateTetrominoLeft()) {
-                                targetTime.set(System.currentTimeMillis() + 500L);
-                            }
+                            super.rotateTetrominoLeft();
+                            resetLockDelay();
                             break;
                         case SHIFT_RIGHT:
                             super.moveTetrominoRight();
+                            resetLockDelay();
                             break;
                         case ROTATE_RIGHT:
-                            if (super.rotateTetrominoRight()) {
-                                targetTime.set(System.currentTimeMillis() + 500L);
-                            }
+                            super.rotateTetrominoRight();
+                            resetLockDelay();
                             break;
                     }
-                    tetrisActionQueue.remove(0);
                 }
                 display.calculateDisplayColors(board, currentPiece);
                 clearLines();
             }
         });
-
+        requestHandler.start();
     }
 
     @Override
     public void moveTetrominoLeft() {
-        if (tetrisActionQueue.size() < 4) {
-            tetrisActionQueue.add(TetrisAction.SHIFT_LEFT);
-        }
+        nextAction.setAction(TetrisAction.SHIFT_LEFT);
     }
 
     @Override
     public void moveTetrominoRight() {
-        if (tetrisActionQueue.size() < 4) {
-            tetrisActionQueue.add(TetrisAction.SHIFT_RIGHT);
-        }
+        nextAction.setAction(TetrisAction.SHIFT_RIGHT);
     }
 
-    @Override
-    public boolean softDropTetromino() {
-        if (tetrisActionQueue.size() < 4) {
-            tetrisActionQueue.add(TetrisAction.SOFT_DROP);
-        }
-        return true;
+    public void startSoftDrop() {
+        softDropDelay.set(25L);
+    }
+
+    public void stopSoftDrop() {
+        softDropDelay.set(500L);
     }
 
     @Override
     public void hardDropTetromino() {
-        if (tetrisActionQueue.size() < 4) {
-            tetrisActionQueue.add(TetrisAction.HARD_DROP);
-        }
+        nextAction.setAction(TetrisAction.HARD_DROP);
     }
 
     @Override
     public boolean rotateTetrominoRight() {
-        if (tetrisActionQueue.size() < 4) {
-            tetrisActionQueue.add(TetrisAction.ROTATE_RIGHT);
-        }
+        nextAction.setAction(TetrisAction.ROTATE_RIGHT);
         return false;
     }
 
     @Override
     public boolean rotateTetrominoLeft() {
-        if (tetrisActionQueue.size() < 4) {
-            tetrisActionQueue.add(TetrisAction.ROTATE_LEFT);
-        }
+        nextAction.setAction(TetrisAction.ROTATE_LEFT);
         return false;
     }
 
     public void hold() {
-        if (tetrisActionQueue.size() < 4) { // TODO Hold action
-            tetrisActionQueue.add(TetrisAction.HOLD);
-        }
+        nextAction.setAction(TetrisAction.HOLD);
     }
 
     private Tetromino drawFromPieceQueue() {
         while (pieceQueue.size() < 4) {
-            pieceQueue.add(generateNextTetromino().getType());
+            pieceQueue.add(generateNextTetromino());
         }
         Tetromino newTetromino = new Tetromino(pieceQueue.get(0));
+        pieceQueue.remove(0);
         while (pieceQueue.size() < 4) {
-            pieceQueue.add(generateNextTetromino().getType());
+            pieceQueue.add(generateNextTetromino());
         }
         return newTetromino;
     }
 
-    public void gravitySoftDrop() {
-        autoSoftDrop.set(true);
-    }
-
     public boolean isRunning() {
         return isGameRunning.get();
+    }
+
+    @Override
+    protected void fuseCurrentPiece() {
+        super.fuseCurrentPiece();
+        currentPiece = drawFromPieceQueue();
+    }
+
+    private void notifyAllActionListeners(TetrisAction action) {
+        for (ActionExecutionListener listener : actionExecutionListeners) {
+            listener.handleActionExecution(action);
+        }
+    }
+
+    private void notifyAllGravityDropListeners() {
+        for (GravityDropListener listener : gravityDropListeners) {
+            listener.handleGravityDrop();
+        }
+    }
+
+    private void resetLockDelay() {
+        targetTime.set(System.currentTimeMillis() + softDropDelay.get());
+    }
+
+    public void addKeyListener(KeyListener listener) {
+        display.getHolder().addKeyListener(listener);
     }
 
 }

@@ -3,15 +3,18 @@ package core.tetris;
 import javax.swing.*;
 import java.awt.*;
 
-class GridFrame extends JFrame {
+public class GridFrame extends JFrame implements TetrisConstants {
 
     private Color[][] displayColors;
+    private boolean initColors;
 
     GridFrame(String name, Color[][] displayColors) {
         super(name);
         this.displayColors = displayColors;
-        super.setSize(displayColors.length * 12 + 2, displayColors[0].length * 12 + 2);
+        initColors = true;
+        super.setSize(displayColors.length * (BOARD_SCALE + 2) + 2 * BOARD_BORDER, displayColors[0].length * (BOARD_SCALE + 2) + 2 + BOARD_SCALE);
         super.setBackground(Color.BLACK);
+        super.setVisible(true);
     }
 
     protected void updateColors(Color[][] displayColors) {
@@ -21,16 +24,23 @@ class GridFrame extends JFrame {
 
     @Override
     public void paint(Graphics g) {
-        int x = 0;
-        int y;
-        for (Color[] column : displayColors) {
-            y = 0;
-            for (Color elem : column) {
-                g.setColor(elem);
-                g.fillRect(x * 12 + 1, y * 12 + 1, 10, 10);
-                y++;
+        if (g != null) {
+            if (initColors) {
+                g.setColor(Color.LIGHT_GRAY);
+                g.fillRect(0,0, getWidth(), getHeight());
+                initColors = false;
             }
-            x++;
+            int x = 0;
+            int y;
+            for (Color[] column : displayColors) {
+                y = 0;
+                for (Color elem : column) {
+                    g.setColor(elem);
+                    g.fillRect(x * (BOARD_SCALE + 2) + 1, (column.length - y) * (BOARD_SCALE + 2) + 1, BOARD_SCALE, BOARD_SCALE);
+                    y++;
+                }
+                x++;
+            }
         }
     }
 

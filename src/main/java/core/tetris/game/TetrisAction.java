@@ -6,7 +6,6 @@ public enum TetrisAction {
     ROTATE_RIGHT,
     SHIFT_LEFT,
     SHIFT_RIGHT,
-    SOFT_DROP,
     HARD_DROP,
     HOLD
 

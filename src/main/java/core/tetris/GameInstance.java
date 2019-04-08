@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-public abstract class GameInstance {
+public abstract class GameInstance implements TetrisConstants {
 
     protected boolean[][] board;
     protected Tetromino currentPiece;
@@ -15,7 +15,7 @@ public abstract class GameInstance {
     protected List<Tetromino.Type> pieceBag;
 
     public GameInstance() {
-        board = new boolean[10][23];
+        board = new boolean[BOARD_WIDTH][BOARD_HEIGHT + BOARD_BUFFER];
         init();
     }
 
@@ -30,11 +30,13 @@ public abstract class GameInstance {
         currentPiece = null;
     }
 
-    protected Tetromino generateNextTetromino() {
+    protected Tetromino.Type generateNextTetromino() {
         if (pieceBag.isEmpty()) {
             fillPieceBag();
         }
-        return new Tetromino(pieceBag.get((int)(Math.random() * pieceBag.size())));
+        Tetromino.Type output = (pieceBag.get((int)(Math.random() * pieceBag.size())));
+        pieceBag.remove(output);
+        return output;
     }
 
     public void moveTetrominoLeft() {
@@ -62,7 +64,7 @@ public abstract class GameInstance {
 
     protected int clearLines() {
         int lineCount = 0;
-        for (int y = 0; y < 23; y++) {
+        for (int y = 0; y < BOARD_HEIGHT + BOARD_BUFFER; y++) {
             if (isLineAtY(y)) {
                 shiftDownAtY(y);
                 lineCount++;
@@ -73,7 +75,7 @@ public abstract class GameInstance {
 
     protected boolean isLineAtY(int y) {
         boolean allFull = true;
-        for (int x = 0; x < 10; x++) {
+        for (int x = 0; x < BOARD_WIDTH; x++) {
             if (!board[x][y]) {
                 return false;
             }
@@ -82,20 +84,20 @@ public abstract class GameInstance {
     }
 
     private void clearLineAtY(int y) {
-        for (int x = 0; x < 10; x++) {
+        for (int x = 0; x < BOARD_WIDTH; x++) {
             board[x][y] = false;
         }
     }
 
     private void shiftDownAtY(int y) {
         clearLineAtY(y);
-        for (int lineMove = y; lineMove < 22; lineMove++) {
-            for (int x = 0; x < 10; x++) {
+        for (int lineMove = y; lineMove < BOARD_HEIGHT + BOARD_BUFFER - 1; lineMove++) {
+            for (int x = 0; x < BOARD_WIDTH; x++) {
                 board[x][y] = board[x][y + 1];
             }
             clearLineAtY(y + 1);
         }
-        clearLineAtY(22);
+        clearLineAtY(BOARD_HEIGHT + BOARD_BUFFER);
     }
 
     public boolean rotateTetrominoRight() {

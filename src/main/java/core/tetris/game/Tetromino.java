@@ -1,11 +1,15 @@
 package core.tetris.game;
 
+import core.tetris.TetrisConstants;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.awt.*;
 //4 + hold
-public class Tetromino implements TetrominoStates {
+public class Tetromino implements TetrominoStates, TetrisConstants {
 
     public enum Type {
-        I(Color.CYAN), J(Color.BLUE), L(Color.ORANGE), O(Color.YELLOW), S(Color.GREEN), T(Color.MAGENTA), Z(Color.RED);
+        I(Color.CYAN), J(Color.BLUE), L(Color.ORANGE), O(Color.YELLOW), S(Color.GREEN), T(new Color(102, 0, 153)), Z(Color.RED);
 
         private final Color COLOR;
 
@@ -44,36 +48,45 @@ public class Tetromino implements TetrominoStates {
     private State state;
     private final Point origin;
 
-    public Tetromino(Type type) {
+    public Tetromino(@NotNull Type type) {
         this.type = type;
         state = State.SPAWN;
         origin = new Point(3, (type.equals(Type.I) ? 21 : 22));
     }
 
+    @Contract(pure = true)
     public int[][] getPositions() {
         int[][] data;
         switch (type) {
             case O:
                 data = O_STATES[0];
+                break;
             case I:
                 data = I_STATES[state.VALUE];
+                break;
             case J:
                 data = J_STATES[state.VALUE];
+                break;
             case L:
                 data = L_STATES[state.VALUE];
+                break;
             case S:
                 data = S_STATES[state.VALUE];
+                break;
             case T:
                 data = T_STATES[state.VALUE];
+                break;
             case Z:
                 data = Z_STATES[state.VALUE];
+                break;
                 default:
                     data = null;
         }
         return shiftAllPoints(data, origin.x, origin.y);
     }
 
-    protected static int[][] getTestShifts(Tetromino tetromino, Rotate rotate) {
+    @Contract(pure = true)
+    protected static int[][] getTestShifts(@NotNull Tetromino tetromino, @NotNull Rotate rotate) {
         switch (tetromino.getType()) {
             case J:
             case L:
@@ -89,7 +102,8 @@ public class Tetromino implements TetrominoStates {
         return null;
     }
 
-    protected static State getResultantState(State initial, Rotate rotation) {
+    @Contract(pure = true)
+    protected static State getResultantState(@NotNull State initial, @NotNull Rotate rotation) {
         switch (initial) {
             case SPAWN:
                 return (rotation.equals(Rotate.RIGHT)) ? State.RIGHT : State.LEFT;
@@ -103,7 +117,8 @@ public class Tetromino implements TetrominoStates {
         return null;
     }
 
-    protected static int getStateShiftCode(State initial, State end) {
+    @Contract(pure = true)
+    protected static int getStateShiftCode(@NotNull State initial, @NotNull State end) {
         switch (initial) {
             case SPAWN:
                 switch (end) {
@@ -137,7 +152,8 @@ public class Tetromino implements TetrominoStates {
         }
     }
 
-    protected static int[][] getTestShifts(State state, Rotate rotate, boolean isI) {
+    @Contract(pure = true)
+    protected static int[][] getTestShifts(@NotNull State state,@NotNull Rotate rotate, boolean isI) {
         switch (getStateShiftCode(state, getResultantState(state, rotate))) {
             case 0:
                 return (isI) ? new int[][]{{0,0},{-1,0},{-1,1},{0,-2},{-1,-2}}
@@ -175,33 +191,39 @@ public class Tetromino implements TetrominoStates {
         return state;
     }
 
-    public static int[][] shiftAllPoints(int[][] data, int xShift, int yShift) {
+    @Contract(pure = true)
+    public static int[][] shiftAllPoints(@NotNull int[][] data, int xShift, int yShift) {
         int[][] shifter = new int[data.length][];
         int pointNum = 0;
         for (int[] point : data) {
             shifter[pointNum] = new int[]{point[0] + xShift, point[1] + yShift};
+            pointNum++;
         }
         return shifter;
     }
 
-    public static boolean doesCollide(boolean[][] board, int[][] data, int xShift, int yShift) {
+    public static boolean doesCollide(@NotNull boolean[][] board, @NotNull int[][] data, int xShift, int yShift) {
         return doesCollide(board, shiftAllPoints(data, xShift, yShift));
     }
 
-    public static boolean doesCollide(boolean[][] board, int[][] data) {
+    @Contract(pure = true)
+    public static boolean doesCollide(@NotNull boolean[][] board, @NotNull int[][] data) {
         for (int[] point : data) {
             int x = point[0];
             int y = point[1];
-            if (x >= 0 && x < 10 && y >= 0 && y < 23) {
+            if (x >= 0 && x < BOARD_WIDTH && y >= 0 && y < BOARD_HEIGHT + BOARD_BUFFER) {
                 if (board[x][y]) {
-                    return false;
+                    return true;
                 }
+            }
+            else {
+                return true;
             }
         }
         return false;
     }
 
-    public boolean attemptRotation(boolean[][] board, Rotate direction, boolean canFloorKick) {
+    public boolean attemptRotation(@NotNull boolean[][] board, @NotNull Rotate direction, boolean canFloorKick) {
         boolean didRotate = false;
         boolean didFloorKick = false;
         int[][] data = getPositions();
@@ -230,7 +252,7 @@ public class Tetromino implements TetrominoStates {
         return didFloorKick;
     }
 
-    public boolean softDrop(boolean[][] validPositions) {
+    public boolean softDrop(@NotNull boolean[][] validPositions) {
         if (doesCollide(validPositions, getPositions(), 0, -1)) {
             return true;
         }
@@ -238,7 +260,7 @@ public class Tetromino implements TetrominoStates {
         return false;
     }
 
-    public void hardDrop(boolean[][] validPositions) {
+    public void hardDrop(@NotNull boolean[][] validPositions) {
         int drop = 0;
         while (!doesCollide(validPositions, getPositions(), 0, drop - 1)) {
             drop--;
@@ -246,7 +268,7 @@ public class Tetromino implements TetrominoStates {
         origin.y += drop;
     }
 
-    public boolean tryLeftShift(boolean[][] board) {
+    public boolean tryLeftShift(@NotNull boolean[][] board) {
         if (!doesCollide(board, getPositions(), -1, 0)) {
             origin.x--;
             return true;
@@ -254,7 +276,7 @@ public class Tetromino implements TetrominoStates {
         return false;
     }
 
-    public boolean tryRightShift(boolean[][] board) {
+    public boolean tryRightShift(@NotNull boolean[][] board) {
         if (!doesCollide(board, getPositions(), 1, 0)) {
             origin.x++;
             return true;
