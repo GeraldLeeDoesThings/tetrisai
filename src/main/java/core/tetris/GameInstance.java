@@ -2,11 +2,17 @@ package core.tetris;
 
 import core.tetris.game.Tetromino;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
 public abstract class GameInstance {
 
     protected boolean[][] board;
     protected Tetromino currentPiece;
     protected boolean canFloorKick;
+    protected List<Tetromino.Type> pieceBag;
 
     public GameInstance() {
         board = new boolean[10][23];
@@ -19,12 +25,16 @@ public abstract class GameInstance {
     }
 
     void init() {
+        pieceBag = Collections.synchronizedList(new LinkedList<>());
         canFloorKick = true;
         currentPiece = null;
     }
 
-    protected static Tetromino generateNextTetromino() {
-        return new Tetromino(Tetromino.Type.I);
+    protected Tetromino generateNextTetromino() {
+        if (pieceBag.isEmpty()) {
+            fillPieceBag();
+        }
+        return new Tetromino(pieceBag.get((int)(Math.random() * pieceBag.size())));
     }
 
     public void moveTetrominoLeft() {
@@ -35,8 +45,8 @@ public abstract class GameInstance {
         currentPiece.tryRightShift(board);
     }
 
-    public void softDropTetromino() {
-        currentPiece.softDrop(board);
+    public boolean softDropTetromino() {
+        return currentPiece.softDrop(board);
     }
 
     public void hardDropTetromino() {
@@ -47,6 +57,7 @@ public abstract class GameInstance {
         for (int[] point : currentPiece.getPositions()) {
             board[point[0]][point[1]] = true;
         }
+        canFloorKick = true;
     }
 
     protected int clearLines() {
@@ -87,10 +98,25 @@ public abstract class GameInstance {
         clearLineAtY(22);
     }
 
-    public void rotateTetrominoRight() {
-        if (currentPiece.attemptRotation(board, Tetromino.Rotate.RIGHT, canFloorKick)) {
+    public boolean rotateTetrominoRight() {
+        boolean didFloorKick;
+        if ((didFloorKick = currentPiece.attemptRotation(board, Tetromino.Rotate.RIGHT, canFloorKick))) {
             canFloorKick = false;
         }
+        return didFloorKick;
+    }
+
+    public boolean rotateTetrominoLeft() {
+        boolean didFloorKick;
+        if ((didFloorKick = currentPiece.attemptRotation(board, Tetromino.Rotate.LEFT, canFloorKick))) {
+            canFloorKick = false;
+        }
+        return didFloorKick;
+    }
+
+    private void fillPieceBag() {
+        pieceBag.clear();
+        pieceBag.addAll(Arrays.asList(Tetromino.Type.values()));
     }
 
 }

@@ -1,9 +1,8 @@
 package core.tetris.game;
 
-import core.tetris.Tickable;
 import java.awt.*;
 //4 + hold
-public class Tetromino implements TetrominoStates, Tickable {
+public class Tetromino implements TetrominoStates {
 
     public enum Type {
         I(Color.CYAN), J(Color.BLUE), L(Color.ORANGE), O(Color.YELLOW), S(Color.GREEN), T(Color.MAGENTA), Z(Color.RED);
@@ -261,10 +260,6 @@ public class Tetromino implements TetrominoStates, Tickable {
             return true;
         }
         return false;
-    }
-
-    public void doTick() {
-
     }
 
 }
