@@ -12,7 +12,7 @@ public class GridFrame extends JFrame implements TetrisConstants {
         super(name);
         this.displayColors = displayColors;
         initColors = true;
-        super.setSize(displayColors.length * (BOARD_SCALE + 2) + 2 * BOARD_BORDER, displayColors[0].length * (BOARD_SCALE + 2) + 2 + BOARD_SCALE);
+        super.setSize(displayColors.length * (BOARD_SCALE + 3) + 2 * BOARD_BORDER, displayColors[0].length * (BOARD_SCALE + 2) + 2 + 2 * BOARD_SCALE);
         //super.setBackground(Color.BLACK);
         super.setVisible(true);
     }
@@ -36,7 +36,7 @@ public class GridFrame extends JFrame implements TetrisConstants {
                 y = 0;
                 for (Color elem : column) {
                     g.setColor(elem);
-                    g.fillRect(x * (BOARD_SCALE + 2) + 1, (column.length - y) * (BOARD_SCALE + 2) + 1, BOARD_SCALE, BOARD_SCALE);
+                    g.fillRect(x * (BOARD_SCALE + 1) + 1 + BOARD_SCALE / 2, (column.length - y) * (BOARD_SCALE + 1) + 1 + BOARD_SCALE, BOARD_SCALE, BOARD_SCALE);
                     y++;
                 }
                 x++;
