@@ -8,7 +8,6 @@ import java.awt.event.KeyListener;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class Tetris extends GameInstance {
 
@@ -121,15 +120,13 @@ public class Tetris extends GameInstance {
     }
 
     @Override
-    public boolean rotateTetrominoRight() {
+    public void rotateTetrominoRight() {
         nextAction.setAction(TetrisAction.ROTATE_RIGHT);
-        return false;
     }
 
     @Override
-    public boolean rotateTetrominoLeft() {
+    public void rotateTetrominoLeft() {
         nextAction.setAction(TetrisAction.ROTATE_LEFT);
-        return false;
     }
 
     public void hold() {

@@ -119,7 +119,7 @@ public class Tetromino implements TetrominoStates, TetrisConstants {
             case TWO:
                 return  (rotation.equals(Rotate.RIGHT)) ? State.LEFT : State.RIGHT;
         }
-        return null;
+        return State.TWO;
     }
 
     @Contract(pure = true)
@@ -228,21 +228,15 @@ public class Tetromino implements TetrominoStates, TetrisConstants {
         return false;
     }
 
-    public boolean attemptRotation(@NotNull boolean[][] board, @NotNull Rotate direction, boolean canFloorKick) {
+    public void attemptRotation(@NotNull boolean[][] board, @NotNull Rotate direction) {
         boolean didRotate = false;
-        boolean didFloorKick = false;
         int[][] data = getPositions(getResultantState(state, direction).VALUE);
         int[][] testShifts = getTestShifts(state, direction, type.equals(Type.I));
         int[] acceptedShift = null;
         for (int[] pointShift : testShifts) {
             int[][] shiftedPoints = shiftAllPoints(data, pointShift[0], pointShift[1]);
             if (!doesCollide(board, shiftedPoints)) {
-                if ((pointShift[1] <= 0) || canFloorKick) {
-                    if (pointShift[1] > 0) {
-                        didFloorKick = true;
-                    }
-                    didRotate = true;
-                }
+                didRotate = true;
             }
             if (didRotate) {
                 acceptedShift = pointShift;
@@ -254,7 +248,6 @@ public class Tetromino implements TetrominoStates, TetrisConstants {
             origin.x += acceptedShift[0];
             origin.y += acceptedShift[1];
         }
-        return didFloorKick;
     }
 
     public boolean softDrop(@NotNull boolean[][] validPositions) {

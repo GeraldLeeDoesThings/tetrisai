@@ -11,7 +11,6 @@ public abstract class GameInstance implements TetrisConstants {
 
     protected boolean[][] board;
     protected Tetromino currentPiece;
-    protected boolean canFloorKick;
     protected List<Tetromino.Type> pieceBag;
 
     public GameInstance() {
@@ -26,7 +25,6 @@ public abstract class GameInstance implements TetrisConstants {
 
     void init() {
         pieceBag = Collections.synchronizedList(new LinkedList<>());
-        canFloorKick = true;
         currentPiece = null;
     }
 
@@ -59,7 +57,6 @@ public abstract class GameInstance implements TetrisConstants {
         for (int[] point : currentPiece.getPositions()) {
             board[point[0]][point[1]] = true;
         }
-        canFloorKick = true;
     }
 
     protected int clearLines() {
@@ -99,20 +96,12 @@ public abstract class GameInstance implements TetrisConstants {
         clearLineAtY(BOARD_HEIGHT + BOARD_BUFFER - 1);
     }
 
-    public boolean rotateTetrominoRight() {
-        boolean didFloorKick;
-        if ((didFloorKick = currentPiece.attemptRotation(board, Tetromino.Rotate.RIGHT, canFloorKick))) {
-            canFloorKick = false;
-        }
-        return didFloorKick;
+    public void rotateTetrominoRight() {
+        currentPiece.attemptRotation(board, Tetromino.Rotate.RIGHT);
     }
 
-    public boolean rotateTetrominoLeft() {
-        boolean didFloorKick;
-        if ((didFloorKick = currentPiece.attemptRotation(board, Tetromino.Rotate.LEFT, canFloorKick))) {
-            canFloorKick = false;
-        }
-        return didFloorKick;
+    public void rotateTetrominoLeft() {
+        currentPiece.attemptRotation(board, Tetromino.Rotate.LEFT);
     }
 
     private void fillPieceBag() {
